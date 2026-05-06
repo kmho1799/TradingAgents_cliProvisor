@@ -1,5 +1,6 @@
 # Modified from the originally distributed TradingAgents project.
 import os
+import re
 import shutil
 import subprocess
 import time
@@ -17,6 +18,20 @@ from tradingagents.ai_runtime.base import (
 _FALLBACK_PATHS = [
     os.path.expanduser(r"~\.codex\.sandbox-bin\codex.exe"),
 ]
+
+_TASKKILL_SUCCESS_PATTERNS = (
+    re.compile(
+        r"^\s*SUCCESS:\s+The process with PID\s+\d+\s+"
+        r"\(child process of PID\s+\d+\)\s+has been terminated\.\s*$",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"^\s*\uc131\uacf5:\s+PID\s+\d+.*PID\s+\d+.*"
+        r"(?:\uc885\ub8cc|\ud504\ub85c\uc138\uc2a4).*$"
+    ),
+    re.compile(r"^\s*\ufffd+:\s+PID\s+\d+.*PID\s+\d+.*\ufffd+.*$"),
+    re.compile(r"^\s*:\s+PID\s+\d+.*\(PID\s+\d+.*$"),
+)
 
 
 def _find_codex() -> str | None:
@@ -85,7 +100,7 @@ class CodexRuntime(AIRuntime):
                 env=build_utf8_subprocess_env(),
             )
             elapsed = time.monotonic() - start
-            stdout_text = (result.stdout or "").strip()
+            stdout_text = _strip_windows_process_cleanup_noise(result.stdout or "")
             stderr_text = (result.stderr or "").strip()
 
             if result.returncode != 0:
@@ -111,3 +126,12 @@ def _classify_error(detail: str) -> AIErrorKind:
     if "rate limit" in detail_l:
         return AIErrorKind.RATE_LIMIT
     return AIErrorKind.UNKNOWN
+
+
+def _strip_windows_process_cleanup_noise(text: str) -> str:
+    lines = [
+        line
+        for line in text.splitlines()
+        if not any(pattern.match(line) for pattern in _TASKKILL_SUCCESS_PATTERNS)
+    ]
+    return "\n".join(lines).strip()

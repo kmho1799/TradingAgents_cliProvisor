@@ -129,5 +129,26 @@ class CLIChatModelTests(unittest.TestCase):
                 self.assertEqual(codex_runtime._find_codex(), str(codex_exe))
 
 
+class CodexRuntimeOutputTests(unittest.TestCase):
+    def test_strip_windows_taskkill_noise_from_stdout(self):
+        raw = "\n".join(
+            [
+                "SUCCESS: The process with PID 50440 (child process of PID 47168) has been terminated.",
+                "\uc131\uacf5: PID 23860\uc778 \ud504\ub85c\uc138\uc2a4(PID 47168\uc758 \uc790\uc2dd \ud504\ub85c\uc138\uc2a4)\uac00 \uc885\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
+                "\ufffd\ufffd\ufffd\ufffd: PID 17316\ufffd\ufffd \ufffd\ufffd\ufffd\u03bc\ufffd\ufffd(PID 47168\ufffd\ufffd \ufffd\u06bd\ufffd \ufffd\ufffd\ufffd\u03bc\ufffd\ufffd)\ufffd\ufffd \ufffd\ufffd\ufffd\ufffd\u01fe\u03f4\ufffd\ufffd\ufffd\ufffd.",
+                ": PID 33496 \u03bc(PID 47168 \u06bd \u03bc) \u01fe\u03f4.",
+                "# Final report",
+                "This analysis mentions PID 123 once and should remain.",
+            ]
+        )
+
+        cleaned = codex_runtime._strip_windows_process_cleanup_noise(raw)
+
+        self.assertEqual(
+            cleaned,
+            "# Final report\nThis analysis mentions PID 123 once and should remain.",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
