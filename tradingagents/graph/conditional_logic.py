@@ -6,16 +6,21 @@ from tradingagents.agents.utils.agent_states import AgentState
 class ConditionalLogic:
     """Handles conditional logic for determining graph flow."""
 
-    def __init__(self, max_debate_rounds=1, max_risk_discuss_rounds=1):
+    def __init__(self, max_debate_rounds=1, max_risk_discuss_rounds=1, max_analyst_tool_rounds=10):
         """Initialize with configuration parameters."""
         self.max_debate_rounds = max_debate_rounds
         self.max_risk_discuss_rounds = max_risk_discuss_rounds
+        self.max_analyst_tool_rounds = max_analyst_tool_rounds
+
+    def _tool_rounds(self, messages) -> int:
+        """Count how many AI messages with tool_calls are in current session."""
+        return sum(1 for m in messages if getattr(m, "tool_calls", None))
 
     def should_continue_market(self, state: AgentState):
         """Determine if market analysis should continue."""
         messages = state["messages"]
         last_message = messages[-1]
-        if last_message.tool_calls:
+        if last_message.tool_calls and self._tool_rounds(messages) <= self.max_analyst_tool_rounds:
             return "tools_market"
         return "Msg Clear Market"
 
@@ -23,7 +28,7 @@ class ConditionalLogic:
         """Determine if social media analysis should continue."""
         messages = state["messages"]
         last_message = messages[-1]
-        if last_message.tool_calls:
+        if last_message.tool_calls and self._tool_rounds(messages) <= self.max_analyst_tool_rounds:
             return "tools_social"
         return "Msg Clear Social"
 
@@ -31,7 +36,7 @@ class ConditionalLogic:
         """Determine if news analysis should continue."""
         messages = state["messages"]
         last_message = messages[-1]
-        if last_message.tool_calls:
+        if last_message.tool_calls and self._tool_rounds(messages) <= self.max_analyst_tool_rounds:
             return "tools_news"
         return "Msg Clear News"
 
@@ -39,7 +44,7 @@ class ConditionalLogic:
         """Determine if fundamentals analysis should continue."""
         messages = state["messages"]
         last_message = messages[-1]
-        if last_message.tool_calls:
+        if last_message.tool_calls and self._tool_rounds(messages) <= self.max_analyst_tool_rounds:
             return "tools_fundamentals"
         return "Msg Clear Fundamentals"
 

@@ -29,4 +29,9 @@ def create_runtime(config: RuntimeConfig) -> AIRuntime:
 
         return CodexRuntime(config.model, config.enable_web, config.timeout)
 
+    if backend in ("agy", "agy-cli"):
+        from .providers.agy_runtime import AgyRuntime
+
+        return AgyRuntime(config.model, config.enable_web, config.timeout)
+
     raise ValueError(f"Unsupported CLI runtime backend: {config.backend}")

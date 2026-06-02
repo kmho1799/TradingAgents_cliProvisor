@@ -13,7 +13,7 @@ _OPENAI_COMPATIBLE = (
     "openai", "xai", "deepseek", "qwen", "glm", "ollama", "openrouter",
 )
 
-_CLI_PROVIDERS = ("claude-cli", "codex-cli")
+_CLI_PROVIDERS = ("claude-cli", "codex-cli", "agy-cli")
 
 
 def create_llm_client(

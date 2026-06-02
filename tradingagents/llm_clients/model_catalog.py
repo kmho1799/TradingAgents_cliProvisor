@@ -61,6 +61,16 @@ MODEL_OPTIONS: ProviderModeOptions = {
             ("Custom model ID", "custom"),
         ],
     },
+    "agy-cli": {
+        "quick": [
+            ("Agy CLI Gemini 3.5 Flash", "gemini-3.5-flash"),
+            ("Custom model ID", "custom"),
+        ],
+        "deep": [
+            ("Agy CLI Gemini 3.5 Flash", "gemini-3.5-flash"),
+            ("Custom model ID", "custom"),
+        ],
+    },
     "google": {
         "quick": [
             ("Gemini 3 Flash - Next-gen fast", "gemini-3-flash-preview"),
