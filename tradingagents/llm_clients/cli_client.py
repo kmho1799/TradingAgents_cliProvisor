@@ -54,7 +54,9 @@ class CLIChatModel:
     def _run(self, prompt: str) -> AIMessage:
         options = AIPromptOptions(timeout=self.timeout, use_web=self.use_web)
         result = self.runtime.run_prompt(prompt, options)
-        if result.error in (AIErrorKind.TIMEOUT, AIErrorKind.RATE_LIMIT):
+        if result.error in (AIErrorKind.TIMEOUT, AIErrorKind.RATE_LIMIT) or (
+            result.error == AIErrorKind.PARSE_ERROR and result.error_detail == "empty response"
+        ):
             if result.error == AIErrorKind.RATE_LIMIT:
                 time.sleep(5)
             result = self.runtime.run_prompt(prompt, options)
